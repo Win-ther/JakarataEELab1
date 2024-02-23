@@ -15,19 +15,23 @@ public class PersonRepository {
     EntityManager entityManager;
 
     @Transactional
-    public Person createOrUpdate(Person person) {
+    public Person createPerson(Person person) {
         entityManager.persist(person);
         return person;
     }
 
-    public List<Person> readAll() {
+    public List<Person> readAllPerson() {
         return entityManager
                 .createQuery("select p from Person p", Person.class)
                 .getResultList();
     }
 
-    public Person findById(UUID id) {
+    public Person findPersonById(UUID id) {
         return entityManager.find(Person.class, id);
+    }
+
+    public Person updatePerson(Person updatedPerson) {
+        return entityManager.merge(updatedPerson);
     }
 
     public void deletePerson(Person person) {
