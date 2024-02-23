@@ -1,4 +1,4 @@
-package se.iths.jakartaeelab1;
+package se.iths.jakartaeelab1.resource;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
