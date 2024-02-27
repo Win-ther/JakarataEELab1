@@ -29,4 +29,7 @@ public class PersonService {
             throw new NotFoundException("Invalid id" + id);
         return PersonDto.map(person);
     }
+    public Person addPerson(PersonDto personDto){
+        return personRepository.createPerson(PersonDto.map(personDto));
+    }
 }
