@@ -40,4 +40,8 @@ public class PersonService {
         person.setId(id);
         return personRepository.updatePerson(person);
     }
+    public void removePerson(UUID id){
+        if (onePerson(id) != null)
+            personRepository.deletePerson(id);
+    }
 }
