@@ -30,11 +30,14 @@ public class PersonRepository {
         return entityManager.find(Person.class, id);
     }
 
+    @Transactional
     public Person updatePerson(Person updatedPerson) {
         return entityManager.merge(updatedPerson);
     }
 
-    public void deletePerson(Person person) {
+    @Transactional
+    public void deletePerson(UUID id) {
+        var person = findPersonById(id);
         entityManager.remove(person);
     }
 
