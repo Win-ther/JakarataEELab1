@@ -32,4 +32,12 @@ public class PersonService {
     public Person addPerson(PersonDto personDto){
         return personRepository.createPerson(PersonDto.map(personDto));
     }
+    public Person updatePerson(UUID id, PersonDto personDto){
+        Person person = PersonDto.map(onePerson(id));
+        person.setName(personDto.name());
+        person.setAge(personDto.age());
+        person.setProfession(personDto.profession());
+        person.setId(id);
+        return personRepository.updatePerson(person);
+    }
 }
