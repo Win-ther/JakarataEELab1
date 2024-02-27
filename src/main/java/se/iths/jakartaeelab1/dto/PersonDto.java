@@ -10,4 +10,12 @@ public record PersonDto(@NotEmpty String name, @Positive int age, @NotEmpty Stri
         return new PersonDto(person.getName(), person.getAge(), person.getProfession());
     }
 
+    public static Person map(PersonDto personDto) {
+        Person person = new Person();
+        person.setName(personDto.name);
+        person.setAge(personDto.age);
+        person.setProfession(personDto.profession);
+        return person;
+    }
+
 }
