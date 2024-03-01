@@ -8,12 +8,14 @@ import se.iths.jakartaeelab1.dto.Persons;
 import se.iths.jakartaeelab1.entity.Person;
 import se.iths.jakartaeelab1.repository.PersonRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
 public class PersonService {
     PersonRepository personRepository;
+
+    public PersonService() {
+    }
 
     @Inject
     public PersonService(PersonRepository personRepository){
