@@ -60,4 +60,11 @@ public class PersonResource {
         return personService.updatePerson(id, personDto);
     }
 
+    @DELETE
+    @Path("/{id}")
+    public Response deletePerson(@PathParam("id") UUID id) {
+        personService.removePerson(id);
+        return Response.noContent().build();
+    }
+
 }
