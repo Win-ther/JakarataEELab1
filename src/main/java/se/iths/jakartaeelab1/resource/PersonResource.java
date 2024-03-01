@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import se.iths.jakartaeelab1.dto.PersonDto;
 import se.iths.jakartaeelab1.dto.Persons;
+import se.iths.jakartaeelab1.entity.Person;
 import se.iths.jakartaeelab1.service.PersonService;
 
 import java.net.URI;
@@ -49,6 +50,14 @@ public class PersonResource {
         var person = personService.addPerson(personDto);
         return Response.created(
                 URI.create(uriInfo.getAbsolutePath().toString() + "/" + person.getId())).build();
+    }
+
+    @PATCH
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}")
+    public Person updatePerson(@PathParam("id") UUID id, @Valid PersonDto personDto) {
+        return personService.updatePerson(id, personDto);
     }
 
 }
