@@ -5,26 +5,20 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.org.bouncycastle.cert.ocsp.Req;
-import se.iths.jakartaeelab1.dto.PersonDto;
 import se.iths.jakartaeelab1.dto.Persons;
-import se.iths.jakartaeelab1.entity.Person;
-import java.io.File;
-import java.time.Duration;
-import java.util.List;
-import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.io.File;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PersonIT {
 
     @Container
@@ -47,6 +41,7 @@ class PersonIT {
         RestAssured.port = port;
     }
     @Test
+    @Order(1)
     @DisplayName("getAllPersonsShouldReturnEmptyListOfPersons")
     void getAllPersonsShouldReturnEmptyListOfPersons(){
         Persons persons = RestAssured.get("/persons").then()
@@ -56,13 +51,13 @@ class PersonIT {
         assertEquals(List.of(),persons.persons());
     }
     @Test
+    @Order(2)
     @DisplayName("addPersonShouldReturnListWithSamePerson")
     void addPersonShouldReturnListWithSamePerson(){
-        PersonDto alf = new PersonDto("Alf",25,"Kriminell");
         String jsonString = "{\"name\" : \"alf\",\"age\" : \"25\", \"profession\" : \"Kriminell\"}";
         RequestSpecification request = RestAssured.given();
         request.contentType(ContentType.JSON);
-        request.baseUri("http://localhost:8080/jakartaeelabb/persons");
+        request.baseUri("http://localhost:"+port+"/jakartaeelabb/persons");
         request.body(jsonString);
         Response response = request.post();
         System.out.println(response.asString());
