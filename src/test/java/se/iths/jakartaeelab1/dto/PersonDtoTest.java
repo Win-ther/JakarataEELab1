@@ -1,19 +1,17 @@
 package se.iths.jakartaeelab1.dto;
 
-import jakarta.validation.*;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import se.iths.jakartaeelab1.entity.Person;
-
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PersonDtoTest {
+
     private static Validator validator;
 
     @BeforeAll
@@ -24,53 +22,43 @@ public class PersonDtoTest {
                 .buildValidatorFactory();
         validator = factory.getValidator();
     }
-
     @Test
-    void map_shouldMapPersonToPersonDto() {
-        Person person = new Person();
-        person.setName("John");
-        person.setAge(25);
-        person.setProfession("Developer");
+    void validPersonDto() {
+        PersonDto validPerson = new PersonDto("Bob Doe", 42, "Spy");
 
-        PersonDto personDto = PersonDto.map(person);
+        var violations = validator.validate(validPerson);
 
-        assertEquals("John", personDto.name());
-        assertEquals(25, personDto.age());
-        assertEquals("Developer", personDto.profession());
-
-        PersonDto mappedPersonDto = PersonDto.map(person);
-
-        Set<ConstraintViolation<PersonDto>> violations = validator.validate(mappedPersonDto);
-
-        assertTrue(violations.isEmpty(), "Validation should pass for mapping Person to PersonDto");
+        assertEquals(0, violations.size());
     }
 
     @Test
-    void map_shouldMapPersonDtoToPerson() {
-        PersonDto personDto = new PersonDto(
-                "Jane",
-                30,
-                "Engineer");
+    void invalidNamePersonDto() {
+        PersonDto invalidPerson = new PersonDto("", 42, "Spy");
 
-        Person person = PersonDto.map(personDto);
+        var violations = validator.validate(invalidPerson);
 
-        assertEquals("Jane", person.getName());
-        assertEquals(30, person.getAge());
-        assertEquals("Engineer", person.getProfession());
-
-        PersonDto personDtoInput = new PersonDto("Jane", 30, "Engineer");
-        Set<ConstraintViolation<PersonDto>> violations = validator.validate(personDtoInput);
-
-        assertTrue(violations.isEmpty(), "Validation should pass for mapping PersonDto to Person");
-
-        Person mappedPerson = PersonDto.map(personDtoInput);
-
-        assertEquals("Jane", mappedPerson.getName());
-        assertEquals(30, mappedPerson.getAge());
-        assertEquals("Engineer", mappedPerson.getProfession());
+        assertEquals(1, violations.size());
+        assertEquals("must not be empty", violations.iterator().next().getMessage());
     }
 
+    @Test
+    void invalidAgePersonDto() {
+        PersonDto invalidPerson = new PersonDto("Bob Doe", -5, "Spy");
 
+        var violations = validator.validate(invalidPerson);
+
+        assertEquals(1, violations.size());
+        assertEquals("must be greater than 0", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    void invalidProfessionPersonDto() {
+        PersonDto invalidPerson = new PersonDto("Bob Doe", 42, "");
+
+        var violations = validator.validate(invalidPerson);
+        assertEquals(1, violations.size());
+        assertEquals("must not be empty", violations.iterator().next().getMessage());
+    }
 }
 
 
