@@ -5,6 +5,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -60,11 +61,7 @@ class PersonIT {
     @Order(2)
     @DisplayName("addPersonShouldReturnListWithSamePerson")
     void addPersonShouldReturnListWithSamePerson() {
-        String jsonString = "{\"name\" : \"Alf\",\"age\" : \"25\", \"profession\" : \"Kriminell\"}";
-        RequestSpecification request = RestAssured.given();
-        request.contentType(ContentType.JSON);
-        request.baseUri("http://localhost:" + port + "/jakartaeelabb/persons");
-        request.body(jsonString);
+        RequestSpecification request = setUpRequest("{\"name\" : \"Alf\",\"age\" : \"25\", \"profession\" : \"Kriminell\"}");
 
         Response response = request.post();
         ValidatableResponse validatableResponse = response.then();
@@ -78,18 +75,13 @@ class PersonIT {
     }
 
     @Test
+    @Order(3)
     @DisplayName("getPersonByIdShouldReturnPersonWithThatId")
     void getPersonByIdShouldReturnPersonWithThatId() {
-        String jsonString = "{\"name\" : \"Sten\",\"age\" : \"204\", \"profession\" : \"Landowner\"}";
-        RequestSpecification request = RestAssured.given();
-        request.contentType(ContentType.JSON);
-        request.baseUri("http://localhost:" + port + "/jakartaeelabb/persons");
-        request.body(jsonString);
+        RequestSpecification request = setUpRequest("{\"name\" : \"Sten\",\"age\" : \"204\", \"profession\" : \"Landowner\"}");
 
         Response response = request.post();
-        String responseHeader = response.getHeader("Location");
-        String[] splitHeader = responseHeader.split("/");
-        UUID id = UUID.fromString((splitHeader[splitHeader.length - 1]));
+        UUID id = getUuidFromResponse(response);
 
         PersonDto personDto = RestAssured.get("/persons/" + id).then()
                 .statusCode(200)
@@ -97,5 +89,48 @@ class PersonIT {
                 .as(PersonDto.class);
 
         assertEquals(new PersonDto("Sten", 204, "Landowner"), personDto);
+    }
+
+    @Test
+    @Order(4)
+    @DisplayName("updatePersonShouldReturnUpdatedPersonDtoAndShouldHaveUpdatedFields")
+    void updatePersonShouldReturnUpdatedPersonDtoAndShouldHaveUpdatedFields(){
+        RequestSpecification request = setUpRequest("{\"name\" : \"Ulla\",\"age\" : \"68\", \"profession\" : \"Gravedigger\"}");
+
+        Response response = request.post();
+        UUID id = getUuidFromResponse(response);
+
+
+        String jsonString = "{\"name\" : \"Ulla\",\"age\" : \"70\", \"profession\" : \"Programmer\"}";
+        PersonDto personDto = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(jsonString)
+                .when()
+                .patch("/persons/"+id)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(PersonDto.class);
+
+        assertEquals("Ulla", personDto.name());
+        assertEquals(70, personDto.age());
+        assertEquals("Programmer", personDto.profession());
+    }
+
+    @NotNull
+    private static RequestSpecification setUpRequest(String jsonString) {
+        RequestSpecification request = RestAssured.given();
+        request.contentType(ContentType.JSON);
+        request.baseUri("http://localhost:" + port + "/jakartaeelabb/persons");
+        request.body(jsonString);
+        return request;
+    }
+
+    @NotNull
+    private static UUID getUuidFromResponse(Response response) {
+        String responseHeader = response.getHeader("Location");
+        String[] splitHeader = responseHeader.split("/");
+        UUID id = UUID.fromString((splitHeader[splitHeader.length - 1]));
+        return id;
     }
 }
