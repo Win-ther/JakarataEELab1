@@ -15,10 +15,10 @@ import se.iths.jakartaeelab1.dto.PersonDto;
 import se.iths.jakartaeelab1.dto.Persons;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
@@ -54,41 +54,36 @@ class PersonIT {
                 .statusCode(200)
                 .extract()
                 .as(Persons.class);
-        assertEquals(List.of(), persons.persons());
+        assertThat(List.of()).isEqualTo(persons.persons());
     }
 
     @Test
     @Order(2)
-    @DisplayName("addPersonShouldReturnListWithSamePerson")
-    void addPersonShouldReturnListWithSamePerson() {
-        RequestSpecification request = setUpRequest("{\"name\" : \"Alf\",\"age\" : \"25\", \"profession\" : \"Kriminell\"}");
+    @DisplayName("addPersonShouldReturnResponseWithCode201AndGetAllPersonsShouldThenReturnListWithThatPerson")
+    void addPersonShouldReturnResponseWithCode201AndGetPersonsShouldThenReturnListWithThatPerson() {
+        RequestSpecification request = setUpRequest("{\"name\" : \"Kjell\",\"age\" : \"25\", \"profession\" : \"Kriminell\"}");
 
-        Response response = request.post();
-        ValidatableResponse validatableResponse = response.then();
+        request.post().then()
+                .statusCode(201).extract().response();
+        Persons persons = RestAssured.get("/persons").as(Persons.class);
 
-        validatableResponse.statusCode(201);
-        Persons persons = RestAssured.get("/persons").then()
-                .statusCode(200)
-                .extract()
-                .as(Persons.class);
-        assertEquals(List.of(new PersonDto("Alf", 25, "Kriminell")), persons.persons());
+        assertThat(List.of(new PersonDto("Kjell", 25, "Kriminell"))).isEqualTo(persons.persons());
     }
 
     @Test
     @Order(3)
-    @DisplayName("getPersonByIdShouldReturnPersonWithThatId")
+    @DisplayName("getPersonByIdShouldReturnPersonDtoWithThatId")
     void getPersonByIdShouldReturnPersonWithThatId() {
         RequestSpecification request = setUpRequest("{\"name\" : \"Sten\",\"age\" : \"204\", \"profession\" : \"Landowner\"}");
 
-        Response response = request.post();
-        UUID id = getUuidFromResponse(response);
+        UUID id = getUuidFromResponse(request.post());
 
         PersonDto personDto = RestAssured.get("/persons/" + id).then()
                 .statusCode(200)
                 .extract()
                 .as(PersonDto.class);
 
-        assertEquals(new PersonDto("Sten", 204, "Landowner"), personDto);
+        assertThat(new PersonDto("Sten", 204, "Landowner")).isEqualTo(personDto);
     }
 
     @Test
@@ -97,9 +92,7 @@ class PersonIT {
     void updatePersonShouldReturnUpdatedPersonDtoAndShouldHaveUpdatedFields(){
         RequestSpecification request = setUpRequest("{\"name\" : \"Ulla\",\"age\" : \"68\", \"profession\" : \"Gravedigger\"}");
 
-        Response response = request.post();
-        UUID id = getUuidFromResponse(response);
-
+        UUID id = getUuidFromResponse(request.post());
 
         String jsonString = "{\"name\" : \"Ulla\",\"age\" : \"70\", \"profession\" : \"Programmer\"}";
         PersonDto personDto = RestAssured.given()
@@ -112,11 +105,22 @@ class PersonIT {
                 .extract()
                 .as(PersonDto.class);
 
-        assertEquals("Ulla", personDto.name());
-        assertEquals(70, personDto.age());
-        assertEquals("Programmer", personDto.profession());
+        assertThat(new PersonDto("Ulla",70,"Programmer")).isEqualTo(personDto);
     }
+    @Test
+    @Order(5)
+    @DisplayName("deletePersonShouldRemovePersonAndGetAllPersonsShouldThenReturnListWithoutThatPerson")
+    void deletePersonShouldRemovePerson(){
+        RequestSpecification request = setUpRequest("{\"name\" : \"Remy Removal\",\"age\" : \"12\", \"profession\" : \"Cleaner\"}");
 
+        Response response = request.post();
+        UUID id = getUuidFromResponse(response);
+
+        RestAssured.delete("/persons/" + id).then()
+                .statusCode(204);
+        Persons persons = RestAssured.get("/persons").as(Persons.class);
+        assertThat(persons.persons()).doesNotContain(new PersonDto("Remy Removal",12,"Cleaner"));
+    }
     @NotNull
     private static RequestSpecification setUpRequest(String jsonString) {
         RequestSpecification request = RestAssured.given();
@@ -130,7 +134,6 @@ class PersonIT {
     private static UUID getUuidFromResponse(Response response) {
         String responseHeader = response.getHeader("Location");
         String[] splitHeader = responseHeader.split("/");
-        UUID id = UUID.fromString((splitHeader[splitHeader.length - 1]));
-        return id;
+        return UUID.fromString((splitHeader[splitHeader.length - 1]));
     }
 }
