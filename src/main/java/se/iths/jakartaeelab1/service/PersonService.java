@@ -8,12 +8,14 @@ import se.iths.jakartaeelab1.dto.Persons;
 import se.iths.jakartaeelab1.entity.Person;
 import se.iths.jakartaeelab1.repository.PersonRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
 public class PersonService {
     PersonRepository personRepository;
+
+    public PersonService() {
+    }
 
     @Inject
     public PersonService(PersonRepository personRepository){
@@ -32,13 +34,13 @@ public class PersonService {
     public Person addPerson(PersonDto personDto){
         return personRepository.createPerson(PersonDto.map(personDto));
     }
-    public Person updatePerson(UUID id, PersonDto personDto){
+    public PersonDto updatePerson(UUID id, PersonDto personDto){
         Person person = PersonDto.map(onePerson(id));
         person.setName(personDto.name());
         person.setAge(personDto.age());
         person.setProfession(personDto.profession());
         person.setId(id);
-        return personRepository.updatePerson(person);
+        return PersonDto.map(personRepository.updatePerson(person));
     }
     public void removePerson(UUID id){
         if (onePerson(id) != null)
