@@ -5,6 +5,8 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
+import jakarta.ws.rs.NotFoundException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.ComposeContainer;
@@ -19,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThatException;
 
 @Testcontainers
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -48,7 +50,7 @@ class PersonIT {
 
     @Test
     @Order(1)
-    @DisplayName("getAllPersonsShouldReturnEmptyListOfPersons")
+    @DisplayName("getAllPersons should return empty list of persons")
     void getAllPersonsShouldReturnEmptyListOfPersons() {
         Persons persons = RestAssured.get("/persons").then()
                 .statusCode(200)
@@ -59,20 +61,18 @@ class PersonIT {
 
     @Test
     @Order(2)
-    @DisplayName("addPersonShouldReturnResponseWithCode201AndGetAllPersonsShouldThenReturnListWithThatPerson")
-    void addPersonShouldReturnResponseWithCode201AndGetPersonsShouldThenReturnListWithThatPerson() {
+    @DisplayName("addPersons should return response 201 and getAllPersons should return list with person")
+    void addPersonShouldReturnResponse201AndGetPersonsShouldReturnListWithPerson() {
         RequestSpecification request = setUpRequest("{\"name\" : \"Kjell\",\"age\" : \"25\", \"profession\" : \"Kriminell\"}");
 
-        request.post().then()
-                .statusCode(201).extract().response();
+        request.post().then().statusCode(201);
         Persons persons = RestAssured.get("/persons").as(Persons.class);
 
         assertThat(List.of(new PersonDto("Kjell", 25, "Kriminell"))).isEqualTo(persons.persons());
     }
-
     @Test
     @Order(3)
-    @DisplayName("getPersonByIdShouldReturnPersonDtoWithThatId")
+    @DisplayName("getPersonById should return person with that id")
     void getPersonByIdShouldReturnPersonWithThatId() {
         RequestSpecification request = setUpRequest("{\"name\" : \"Sten\",\"age\" : \"204\", \"profession\" : \"Landowner\"}");
 
@@ -85,11 +85,10 @@ class PersonIT {
 
         assertThat(new PersonDto("Sten", 204, "Landowner")).isEqualTo(personDto);
     }
-
     @Test
     @Order(4)
-    @DisplayName("updatePersonShouldReturnUpdatedPersonDtoAndShouldHaveUpdatedFields")
-    void updatePersonShouldReturnUpdatedPersonDtoAndShouldHaveUpdatedFields(){
+    @DisplayName("updatePerson should return updated personDto with updated fields")
+    void updatePersonShouldReturnUpdatedPersonDtoWithUpdatedFields(){
         RequestSpecification request = setUpRequest("{\"name\" : \"Ulla\",\"age\" : \"68\", \"profession\" : \"Gravedigger\"}");
 
         UUID id = getUuidFromResponse(request.post());
@@ -109,17 +108,38 @@ class PersonIT {
     }
     @Test
     @Order(5)
-    @DisplayName("deletePersonShouldRemovePersonAndGetAllPersonsShouldThenReturnListWithoutThatPerson")
-    void deletePersonShouldRemovePerson(){
+    @DisplayName("deletePerson should remove person, getAllPersons should return list without that person")
+    void deletePersonShouldRemovePersonGetAllPersonsShouldReturnListWithoutThatPerson(){
         RequestSpecification request = setUpRequest("{\"name\" : \"Remy Removal\",\"age\" : \"12\", \"profession\" : \"Cleaner\"}");
 
-        Response response = request.post();
-        UUID id = getUuidFromResponse(response);
+        UUID id = getUuidFromResponse(request.post());
 
         RestAssured.delete("/persons/" + id).then()
                 .statusCode(204);
         Persons persons = RestAssured.get("/persons").as(Persons.class);
         assertThat(persons.persons()).doesNotContain(new PersonDto("Remy Removal",12,"Cleaner"));
+    }
+    @Test
+    @Order(6)
+    @DisplayName("getPersonById with invalid Id should give status 404")
+    void getPersonByIdWithInvalidIdShouldGiveStatus404(){
+        RestAssured.get("/persons/" + 666)
+                .then()
+                .statusCode(404);
+    }
+    @Test
+    @Order(7)
+    @DisplayName("addPersons with invalid fields should return status 400 and response should contain ValidationErrors")
+    void addPersonsWithInvalidFieldsShouldReturnStatus400AndResponseShouldContainValidationErrors(){
+        RequestSpecification request = setUpRequest("{\"name\" : \"\",\"age\" : \"-124\", \"profession\" : \"\"}");
+
+        Response response = request.post()
+                .then()
+                .statusCode(400)
+                .extract()
+                .response();
+
+        assertThat(response.asString()).contains("{\"field\":\"age\",\"violationMessage\":\"must be greater than 0\"}","{\"field\":\"profession\",\"violationMessage\":\"must not be empty\"}","{\"field\":\"name\",\"violationMessage\":\"must not be empty\"}");
     }
     @NotNull
     private static RequestSpecification setUpRequest(String jsonString) {
