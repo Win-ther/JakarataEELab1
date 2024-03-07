@@ -3,10 +3,7 @@ package se.iths.jakartaeelab1.resource;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
-import jakarta.ws.rs.NotFoundException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.ComposeContainer;
@@ -21,7 +18,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatException;
 
 @Testcontainers
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -123,7 +119,9 @@ class PersonIT {
     @Order(6)
     @DisplayName("getPersonById with invalid Id should give status 404")
     void getPersonByIdWithInvalidIdShouldGiveStatus404(){
-        RestAssured.get("/persons/" + 666)
+        UUID invalidId = UUID.randomUUID();
+
+        RestAssured.get("/persons/" + invalidId)
                 .then()
                 .statusCode(404);
     }
