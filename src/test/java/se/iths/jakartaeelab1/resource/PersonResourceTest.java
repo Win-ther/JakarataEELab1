@@ -131,4 +131,37 @@ class PersonResourceTest {
         assertEquals(404, response.getStatus());
     }
 
+    @Test
+    @DisplayName("delete person with DELETE should return status 204")
+    void deletePersonShouldReturnStatus204() throws Exception{
+        UUID id = UUID.randomUUID();
+
+        MockHttpRequest request = MockHttpRequest.delete("/persons/" + id);
+        MockHttpResponse response = new MockHttpResponse();
+        dispatcher.invoke(request, response);
+
+        assertEquals(204, response.getStatus());
+    }
+
+    @Test
+    @DisplayName("non existing id when deleting person with DELETE should return status 404")
+    void nonExistingIdWhenDeletingPersonShouldReturnStatus404() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        Mockito.doThrow(new NotFoundException()).when(personService).removePerson(id);
+
+        MockHttpRequest request = MockHttpRequest.delete("/persons/" + id);
+        MockHttpResponse response = new MockHttpResponse();
+        dispatcher.invoke(request, response);
+
+        assertEquals(404, response.getStatus());
+    }
+
+    @Test
+    @DisplayName("PersonResource empty constructor check")
+    void personResourceEmptyConstructorCheck() {
+        PersonResource personResource = new PersonResource();
+        assertEquals(PersonResource.class, personResource.getClass());
+    }
+
 }
