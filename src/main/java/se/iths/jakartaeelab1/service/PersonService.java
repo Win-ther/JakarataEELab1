@@ -14,8 +14,7 @@ import java.util.UUID;
 public class PersonService {
     PersonRepository personRepository;
 
-    public PersonService() {
-    }
+
 
     @Inject
     public PersonService(PersonRepository personRepository){
@@ -46,4 +45,6 @@ public class PersonService {
         if (onePerson(id) != null)
             personRepository.deletePerson(id);
     }
+
+
 }
