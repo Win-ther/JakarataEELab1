@@ -96,4 +96,39 @@ class PersonResourceTest {
         assertEquals(201, response.getStatus());
     }
 
+    @Test
+    @DisplayName("update person with PATCH should return status 200")
+    void updatePersonShouldReturnStatus200() throws Exception{
+        UUID id = UUID.randomUUID();
+        PersonDto existingPersonDto = new PersonDto("Anna", 30, "Marketing");
+
+        when(personService.updatePerson(Mockito.any(UUID.class), Mockito.any(PersonDto.class)))
+                .thenReturn(existingPersonDto);
+
+        MockHttpRequest request = MockHttpRequest.patch("/persons/" + id);
+        request.contentType(MediaType.APPLICATION_JSON);
+        request.content("{\"name\":\"Louise\",\"age\":25,\"profession\":\"Soldier\"}".getBytes());
+        MockHttpResponse response = new MockHttpResponse();
+        dispatcher.invoke(request, response);
+
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
+    @DisplayName("non existing id when updating person with PATCH should return status 404")
+    void nonExistingIdWhenUpdatingPersonShouldReturn404() throws Exception{
+        UUID id = UUID.randomUUID();
+
+        when(personService.updatePerson(Mockito.any(UUID.class), Mockito.any(PersonDto.class)))
+                .thenThrow(new NotFoundException());
+
+        MockHttpRequest request = MockHttpRequest.patch("/persons/" + id);
+        request.contentType(MediaType.APPLICATION_JSON);
+        request.content("{\"name\":\"Steve\",\"age\":55,\"profession\":\"Sailor\"}".getBytes());
+        MockHttpResponse response = new MockHttpResponse();
+        dispatcher.invoke(request, response);
+
+        assertEquals(404, response.getStatus());
+    }
+
 }
