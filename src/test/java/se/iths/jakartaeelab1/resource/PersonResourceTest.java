@@ -41,7 +41,7 @@ class PersonResourceTest {
 
     @Test
     @DisplayName("get all persons as a list with GET should return status 200")
-    void getAllPersonsReturnsWithStatus200() throws Exception {
+    void getAllPersonsAsAListShouldReturnStatus200() throws Exception {
         when(personService.allPersons()).thenReturn(new Persons(List.of()));
 
         MockHttpRequest request = MockHttpRequest.get("/persons");
@@ -54,7 +54,7 @@ class PersonResourceTest {
 
     @Test
     @DisplayName("finding one person by id with GET should return status 200")
-    void findingOnePersonByIdShouldReturnWithStatus200() throws Exception {
+    void findingOnePersonByIdShouldReturnStatus200() throws Exception {
         UUID id = UUID.randomUUID();
         PersonDto personDto = new PersonDto("Peter", 49, "Doctor");
 
@@ -70,7 +70,7 @@ class PersonResourceTest {
 
     @Test
     @DisplayName("not finding a person by id with GET should return status 404")
-    void notFindingAPersonByIdShouldReturnWithStatus404() throws Exception {
+    void notFindingAPersonByIdShouldReturnStatus404() throws Exception {
         UUID id = UUID.randomUUID();
 
         when(personService.onePerson(id)).thenThrow(new NotFoundException());
@@ -84,7 +84,7 @@ class PersonResourceTest {
 
     @Test
     @DisplayName("create new person with POST should return status 201")
-    void createNewPersonPostShouldReturnWithStatus201() throws Exception {
+    void createNewPersonShouldReturnStatus201() throws Exception {
         when(personService.addPerson(Mockito.any())).thenReturn(new Person());
 
         MockHttpRequest request = MockHttpRequest.post("/persons");
