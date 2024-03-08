@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import se.iths.jakartaeelab1.dto.PersonDto;
 import se.iths.jakartaeelab1.dto.Persons;
@@ -22,14 +21,13 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PersonResourceTest {
-
+    private static final UUID id = UUID.randomUUID();
     @Mock
     PersonService personService;
-
     Dispatcher dispatcher;
 
     @BeforeEach
@@ -55,7 +53,6 @@ class PersonResourceTest {
     @Test
     @DisplayName("finding one person by id with GET should return status 200")
     void findingOnePersonByIdShouldReturnStatus200() throws Exception {
-        UUID id = UUID.randomUUID();
         PersonDto personDto = new PersonDto("Peter", 49, "Doctor");
 
         when(personService.onePerson(id)).thenReturn(personDto);
@@ -71,8 +68,6 @@ class PersonResourceTest {
     @Test
     @DisplayName("not finding a person by id with GET should return status 404")
     void notFindingAPersonByIdShouldReturnStatus404() throws Exception {
-        UUID id = UUID.randomUUID();
-
         when(personService.onePerson(id)).thenThrow(new NotFoundException());
 
         MockHttpRequest request = MockHttpRequest.get("/persons/" + id);
@@ -85,7 +80,7 @@ class PersonResourceTest {
     @Test
     @DisplayName("create new person with POST should return status 201")
     void createNewPersonShouldReturnStatus201() throws Exception {
-        when(personService.addPerson(Mockito.any())).thenReturn(new Person());
+        when(personService.addPerson(any())).thenReturn(new Person());
 
         MockHttpRequest request = MockHttpRequest.post("/persons");
         request.contentType(MediaType.APPLICATION_JSON);
@@ -99,10 +94,9 @@ class PersonResourceTest {
     @Test
     @DisplayName("update person with PATCH should return status 200")
     void updatePersonShouldReturnStatus200() throws Exception{
-        UUID id = UUID.randomUUID();
         PersonDto existingPersonDto = new PersonDto("Anna", 30, "Marketing");
 
-        when(personService.updatePerson(Mockito.any(UUID.class), Mockito.any(PersonDto.class)))
+        when(personService.updatePerson(any(UUID.class), any(PersonDto.class)))
                 .thenReturn(existingPersonDto);
 
         MockHttpRequest request = MockHttpRequest.patch("/persons/" + id);
@@ -116,10 +110,8 @@ class PersonResourceTest {
 
     @Test
     @DisplayName("non existing id when updating person with PATCH should return status 404")
-    void nonExistingIdWhenUpdatingPersonShouldReturn404() throws Exception{
-        UUID id = UUID.randomUUID();
-
-        when(personService.updatePerson(Mockito.any(UUID.class), Mockito.any(PersonDto.class)))
+    void nonExistingIdWhenUpdatingPersonShouldReturnStatus404() throws Exception{
+        when(personService.updatePerson(any(UUID.class), any(PersonDto.class)))
                 .thenThrow(new NotFoundException());
 
         MockHttpRequest request = MockHttpRequest.patch("/persons/" + id);
@@ -134,8 +126,6 @@ class PersonResourceTest {
     @Test
     @DisplayName("delete person with DELETE should return status 204")
     void deletePersonShouldReturnStatus204() throws Exception{
-        UUID id = UUID.randomUUID();
-
         MockHttpRequest request = MockHttpRequest.delete("/persons/" + id);
         MockHttpResponse response = new MockHttpResponse();
         dispatcher.invoke(request, response);
@@ -146,9 +136,7 @@ class PersonResourceTest {
     @Test
     @DisplayName("non existing id when deleting person with DELETE should return status 404")
     void nonExistingIdWhenDeletingPersonShouldReturnStatus404() throws Exception {
-        UUID id = UUID.randomUUID();
-
-        Mockito.doThrow(new NotFoundException()).when(personService).removePerson(id);
+        doThrow(new NotFoundException()).when(personService).removePerson(id);
 
         MockHttpRequest request = MockHttpRequest.delete("/persons/" + id);
         MockHttpResponse response = new MockHttpResponse();
