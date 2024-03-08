@@ -113,6 +113,11 @@ public class PersonServiceTest {
         verify(personRepository).findPersonById(nonExistentId);
     }
 
+    @Test
+    void shouldInstantiateService() {
+        PersonService service = new PersonService();
+        assertNotNull(service);
+    }
 
 
 }
