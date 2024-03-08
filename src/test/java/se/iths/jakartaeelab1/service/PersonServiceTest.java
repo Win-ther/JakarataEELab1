@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class PersonServiceTest {
 
-    @Mock(lenient = true)
+    @Mock
     private PersonRepository personRepository;
 
     @InjectMocks
@@ -36,11 +36,6 @@ public class PersonServiceTest {
         testPerson.setName("Test Name");
         testPerson.setAge(25);
         testPerson.setProfession("Test Profession");
-
-        lenient().when(personRepository.updatePerson(any(Person.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        lenient().when(personRepository.findPersonById(testId)).thenReturn(testPerson);
-        lenient().when(personRepository.readAllPerson()).thenReturn(List.of(testPerson));
-        lenient().doNothing().when(personRepository).deletePerson(testId);
     }
 
     @Test
@@ -59,6 +54,8 @@ public class PersonServiceTest {
 
     @Test
     void testAllPersons() {
+        when(personRepository.readAllPerson()).thenReturn(List.of(testPerson));
+
         var result = personService.allPersons();
 
         assertNotNull(result);
@@ -70,6 +67,8 @@ public class PersonServiceTest {
 
     @Test
     void testOnePerson() {
+        when(personRepository.findPersonById(testId)).thenReturn(testPerson);
+
         var result = personService.onePerson(testId);
 
         assertNotNull(result);
@@ -80,6 +79,9 @@ public class PersonServiceTest {
 
     @Test
     void testUpdatePerson() {
+        when(personRepository.findPersonById(testId)).thenReturn(testPerson);
+        when(personRepository.updatePerson(any(Person.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
         PersonDto updateDto = new PersonDto("Updated Name", 30, "Updated Profession");
         var result = personService.updatePerson(testId, updateDto);
 
@@ -93,6 +95,9 @@ public class PersonServiceTest {
 
     @Test
     void testRemovePerson() {
+        when(personRepository.findPersonById(testId)).thenReturn(testPerson);
+        doNothing().when(personRepository).deletePerson(testId);
+
         personService.removePerson(testId);
 
         verify(personRepository).deletePerson(testId);
@@ -118,6 +123,4 @@ public class PersonServiceTest {
         PersonService service = new PersonService();
         assertNotNull(service);
     }
-
-
 }
