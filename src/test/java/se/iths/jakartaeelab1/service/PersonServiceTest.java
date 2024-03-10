@@ -44,7 +44,6 @@ public class PersonServiceTest {
 
         Person result = personService.addPerson(testPersonDto);
 
-        assertNotNull(result);
         assertEquals("Test Name", result.getName());
         assertEquals(25, result.getAge());
         assertEquals("Test Profession", result.getProfession());
@@ -58,7 +57,7 @@ public class PersonServiceTest {
 
         var result = personService.allPersons();
 
-        assertNotNull(result);
+
         assertEquals(1, result.persons().size());
         assertEquals("Test Name", result.persons().get(0).name());
 
@@ -71,7 +70,6 @@ public class PersonServiceTest {
 
         var result = personService.onePerson(testId);
 
-        assertNotNull(result);
         assertEquals("Test Name", result.name());
 
         verify(personRepository).findPersonById(testId);
