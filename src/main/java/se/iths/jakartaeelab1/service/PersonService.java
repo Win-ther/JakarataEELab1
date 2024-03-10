@@ -46,6 +46,4 @@ public class PersonService {
         if (onePerson(id) != null)
             personRepository.deletePerson(id);
     }
-
-
 }

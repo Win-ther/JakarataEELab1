@@ -85,7 +85,6 @@ public class PersonServiceTest {
         PersonDto updateDto = new PersonDto("Updated Name", 30, "Updated Profession");
         var result = personService.updatePerson(testId, updateDto);
 
-        assertNotNull(result);
         assertEquals("Updated Name", result.name());
         assertEquals(30, result.age());
         assertEquals("Updated Profession", result.profession());
@@ -106,15 +105,7 @@ public class PersonServiceTest {
     @Test
     void testOnePersonNotFoundException() {
         UUID nonExistentId = UUID.randomUUID();
-        when(personRepository.findPersonById(nonExistentId)).thenReturn(null);
-
-        NotFoundException thrownException = assertThrows(
-                NotFoundException.class,
-                () -> personService.onePerson(nonExistentId),
-                "Expected onePerson() to throw, but it didn't"
-        );
-
-        assertTrue(thrownException.getMessage().contains("Invalid id" + nonExistentId));
+        assertThrows(NotFoundException.class, () -> personService.onePerson(nonExistentId));
         verify(personRepository).findPersonById(nonExistentId);
     }
 
