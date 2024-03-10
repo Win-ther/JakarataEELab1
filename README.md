@@ -8,7 +8,7 @@ INSTRUCTIONS
     - Application is now started in a docker-container.
     - Use Postman or Insomnia to run http methods GET, POST, PATCH, DELETE on URI:
       - http://localhost:8080/jakartaeelabb/persons
-      - http://localhost:8080/jakartaeelabb/persons/{id that you get from POST-method}
+      - http://localhost:8080/jakartaeelabb/persons/ {id that you get from POST-method}
 
  - To run IntegrationTests.
     - Download project.
